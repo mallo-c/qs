@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+{{level.legend|e|nl|safe}}
+{%- if let Some(n) = level.next %}
+<form action="/level/{{n.to}}">
+    {% if let Some(_) = next.as_ref().unwrap().key -%}
+    <p><input name="answer"></p>
+    {%- endif %}
+    <button type="submit">{{n.caption}}</button>
+</form>
+{% endif %}
+{% endblock %}

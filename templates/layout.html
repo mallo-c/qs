@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{strings.name}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Open Sans', 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-weight: 300;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+        }
+        a {
+            color: #fff!important;
+            text-decoration: none;
+        }
+        a:hover, a:focus {
+            text-decoration: underline 1px solid #fff;
+        }
+        body::selection {
+            background: #fff;
+            color: #000;
+        }
+        #root {
+            width: 80vw;
+            height: 80vh;
+        }
+        input, button {
+            background: transparent;
+            color: inherit;
+            padding: 10px;
+            outline: none!important;
+            margin: 5px 0;
+            display: inline-block;
+        }
+        input {
+            border: none;
+            border-bottom: 2px dotted #fff;
+        }
+        button, input[type=submit] {
+            cursor: pointer;
+            border: 2px solid #fff;
+            user-select: none;
+        }
+        button:hover, button:focus {
+            background: #fff;
+            color: #000;
+            transition: all 300ms ease-out;
+        }
+        .error {
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000000000;
+            background: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: visibility 300ms ease-out;
+        }
+        .footnote {
+            font-size: 0.3em;
+        }
+        .highlight {
+            color: #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <h4>{{strings.name}}</h4>
+        {% block content %}{% endblock %}
+    </div>
+    <p class="footnote">{{strings.copyright}}
+        {%- for link in links -%}
+        &bull;<a href="{{link.to}}">{{link.caption}}</a>
+        {%- endfor -%}
+    </p>
+</body>
+</html>
