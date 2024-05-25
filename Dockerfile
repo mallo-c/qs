@@ -1,0 +1,11 @@
+FROM rust:1.78-alpine AS builder
+RUN apk add --no-cache musl-dev
+
+COPY . /usr/src/qs
+WORKDIR /usr/src/qs
+RUN cargo build --release
+
+FROM scratch
+COPY --from=builder /usr/src/qs/target/release/qs /qs
+
+ENTRYPOINT [ "/qs" ]
