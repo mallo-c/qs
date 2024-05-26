@@ -9,17 +9,14 @@ use crate::{
 mod filters {
     use std::fmt::Display;
 
-    pub fn nl<T>(src: T) -> ::askama::Result<String>
+    use ammonia::Builder;
+
+    pub fn sanitize<T>(src: T) -> ::askama::Result<String>
     where T: Display
     {
-        Ok(src
-            .to_string()
-            .trim()
-            .split("\n")
-            .filter(|s| !s.is_empty())
-            .map(|s| format!("<p>{s}</p>"))
-            .collect()
-        )
+        let b = Builder::default();
+        let src = src.to_string();
+        Ok(b.clean(&src).to_string())
     }
 }
 

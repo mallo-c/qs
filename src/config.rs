@@ -50,7 +50,7 @@ pub struct Config {
 
 mod defaults {
     pub fn copyright() -> String {
-        "Powered by qs".to_string()
+        "Powered by <a href=\"https://github.com/mallo-c/qs/\">qs</a>".to_string()
     }
     pub fn loading() -> String {
         "Loading...".to_string()
