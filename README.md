@@ -11,22 +11,23 @@ A binary file `qs` will appear in `target/release` directory.
 levels:
   start:
     legend: |
-      <p>Welcome to level 1!</p>
+      Welcome to level 1!
     next:
       caption: GO!
       to: lev2
   lev2:
     legend: |
-      <p>Guess a number from 1 to 10.</p>
+      Guess a number from 1 to 10.
     next:
       caption: I guessed it!
       to: lev3
   lev3:
     key: 7
     legend: |
-      <p>it is 7. Well, how about something more difficult?
-      Guess a number between 1 and 100.</p>
-      <p>Tip: h0w 4b0ut l00k1ng t0 th1s t3xt?</p>
+      it is 7. Well, how about something more difficult?
+      Guess a number between 1 and 100.
+
+      Tip: h0w 4b0ut l00k1ng t0 th1s t3xt?
     next:
       caption: Submit
       to: success
