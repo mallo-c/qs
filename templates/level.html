@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div>{{level.legend|sanitize|safe}}</div>
+<div>{{level.legend|render|safe}}</div>
 {%- if let Some(n) = level.next %}
 <form action="/level/{{n.to}}">
     {% if let Some(_) = next.as_ref().unwrap().key -%}

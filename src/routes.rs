@@ -10,13 +10,17 @@ mod filters {
     use std::fmt::Display;
 
     use ammonia::Builder;
+    use pulldown_cmark::{html, Parser};
 
-    pub fn sanitize<T>(src: T) -> ::askama::Result<String>
+    pub fn render<T>(src: T) -> ::askama::Result<String>
     where T: Display
     {
-        let b = Builder::default();
         let src = src.to_string();
-        Ok(b.clean(&src).to_string())
+        let p = Parser::new(&src);
+        let mut as_html = String::new();
+        html::write_html_fmt(&mut as_html, p).unwrap();
+        let b = Builder::default();
+        Ok(b.clean(&as_html).to_string())
     }
 }
 

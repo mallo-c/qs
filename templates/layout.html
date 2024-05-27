@@ -82,10 +82,6 @@
         .footnote {
             font-size: 0.3em;
         }
-        mark {
-            background: inherit;
-            color: #0f0;
-        }
     </style>
 </head>
 <body>
@@ -93,10 +89,10 @@
         <h4>{{strings.name}}</h4>
         {% block content %}{% endblock %}
     </div>
-    <p class="footnote">{{strings.copyright|sanitize|safe}}
+    <div class="footnote">{{strings.copyright|safe}}
         {%- for link in links -%}
         &bull;<a href="{{link.to}}">{{link.caption}}</a>
         {%- endfor -%}
-    </p>
+    </div>
 </body>
 </html>
