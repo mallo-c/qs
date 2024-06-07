@@ -3,6 +3,7 @@ mod config;
 
 use std::error::Error;
 use std::net::SocketAddrV4;
+use std::sync::Arc;
 
 use actix_web::{web::{self, Data}, App, HttpResponse, HttpServer};
 use argh::{FromArgs, from_env};
@@ -28,7 +29,7 @@ fn __argh_from_str_fn_config(file: &str) -> Result<Config, String> {
 }
 
 struct State {
-    config: Config,
+    config: Arc<Config>,
 }
 
 #[actix_web::main]
@@ -36,8 +37,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = from_env();
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
+    let config = Arc::new(args.config);
     let d = Data::new(State{
-        config: args.config.to_owned(),
+        config: Arc::clone(&config),
     });
     HttpServer::new(move ||{
         App::new()

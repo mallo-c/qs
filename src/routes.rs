@@ -1,10 +1,12 @@
+use std::sync::Arc;
 use actix_web::{web, HttpResponse, Responder};
 use askama::Template;
 use serde::Deserialize;
 
 use crate::{
-    config::{Level, Link, Strings}, State
+    config::Level, State
 };
+use crate::config::Config;
 
 mod filters {
     use std::fmt::Display;
@@ -27,8 +29,7 @@ mod filters {
 #[derive(Template)]
 #[template(path = "level.html")]
 struct LevelPage {
-    pub strings: Strings,
-    pub links: Vec<Link>,
+    pub config: Arc<Config>,
     pub level: Level,
     pub next: Option<Level>
 }
@@ -36,8 +37,7 @@ struct LevelPage {
 #[derive(Template)]
 #[template(path = "wrong.html")]
 struct Wrong {
-    pub strings: Strings,
-    pub links: Vec<Link>,
+    pub config: Arc<Config>
 }
 
 #[derive(Deserialize)]
@@ -57,8 +57,7 @@ pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, quer
     if let Some(a) = &lev.key {
         if a != &query.answer {
             return HttpResponse::Forbidden().content_type("text/html").body(Wrong{
-                strings: data.config.strings.clone(),
-                links: data.config.links.clone()
+                config: Arc::clone(&data.config)
             }.render().expect("failed to render"));
         }
     }
@@ -69,9 +68,8 @@ pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, quer
             .expect("Error: level not found")
             .to_owned());
     HttpResponse::Ok().content_type("text/html").body(LevelPage{
-        strings: data.config.strings.clone(),
         level: lev.clone(),
-        links: data.config.links.clone(),
+        config: Arc::clone(&data.config),
         next
     }.render().expect("failed to render"))
 }
