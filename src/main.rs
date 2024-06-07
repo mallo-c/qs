@@ -1,6 +1,7 @@
 mod routes;
 mod config;
 
+use std::error::Error;
 use std::net::SocketAddrV4;
 
 use actix_web::{web::{self, Data}, App, HttpResponse, HttpServer};
@@ -31,7 +32,7 @@ struct State {
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = from_env();
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
@@ -46,7 +47,8 @@ async fn main() -> std::io::Result<()> {
                                                     .body("")}))
             .route("/level/{lev}", web::get().to(show_level))
     })
-        .bind(SocketAddrV4::new("0.0.0.0".parse().unwrap(), args.port))?
+        .bind(SocketAddrV4::new("0.0.0.0".parse()?, args.port))?
         .run()
         .await
+        .map_err(|error| Box::new(error) as Box<dyn Error>)
 }

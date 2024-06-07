@@ -1,4 +1,5 @@
-use std::{collections::HashMap, fmt::{self, Debug, Display}, str::FromStr};
+use std::{collections::HashMap, fmt::{self, Debug, Display}};
+use std::str::FromStr;
 
 use serde::{de::Visitor, Deserialize, Serialize};
 
@@ -8,7 +9,7 @@ impl<'de> Visitor<'de> for LevelsVisitor {
     type Value = Levels;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("Map from level ID to level")
+        formatter.write_str("Map from level ID to level configuration")
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
@@ -16,7 +17,7 @@ impl<'de> Visitor<'de> for LevelsVisitor {
             A: serde::de::MapAccess<'de>, {
         let mut res = HashMap::<String, Level>::new();
         while let Some((k, mut v)) = map.next_entry::<String, Level>()? {
-            v.id = k.to_owned();
+            k.clone_into(&mut v.id);
             res.insert(k, v);
         }
         Ok(Levels(res))
@@ -92,46 +93,35 @@ pub struct Next {
 }
 
 #[derive(Debug)]
-pub struct Error {
-    msg: String
+pub enum Error {
+    ConfigParseError(serde_yml::Error),
+    FileReadError(std::io::Error)
 }
 
-impl FromStr for Error {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Error { msg: s.to_owned() })
-    }
-}
-
-impl From<&str> for Error {
-    fn from(value: &str) -> Self {
-        return Error{msg: value.to_owned()};
-    }
-}
-
-impl From<String> for Error {
-    fn from(value: String) -> Self {
-        return Error{msg: value};
-    }
-}
+impl std::error::Error for Error {}
 
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "config read error: {}", self.msg)
+        match &self {
+            Error::ConfigParseError(e) => write!(f, "could not parse config: {}", e),
+            Error::FileReadError(e) => write!(f, "could not open file: {}", e)
+        }
+    }
+}
+
+impl FromStr for Config {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_yml::from_str(s)
+            .map_err(Error::ConfigParseError)
     }
 }
 
 impl Config {
-    pub fn from_string(s: &str) -> Result<Self, Error> {
-        match serde_yml::from_str(s) {
-            Ok(c) => Ok(c),
-            Err(e) => Err(e.to_string().into()),
-        }
-    }
     pub fn from_file(name: &str) -> Result<Self, Error> {
-        match std::fs::read_to_string(name) {
-            Ok(s) => Config::from_string(&s),
-            Err(e) => Err(e.to_string().into())
-        }
+        std::fs::read_to_string(name)
+            .map_err(Error::FileReadError)
+            .and_then(|c| c.parse())
     }
 }

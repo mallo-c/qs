@@ -12,13 +12,13 @@ mod filters {
     use ammonia::Builder;
     use pulldown_cmark::{html, Parser};
 
-    pub fn render<T>(src: T) -> ::askama::Result<String>
+    pub fn render<T>(src: T) -> askama::Result<String>
     where T: Display
     {
         let src = src.to_string();
         let p = Parser::new(&src);
         let mut as_html = String::new();
-        html::write_html_fmt(&mut as_html, p).unwrap();
+        html::write_html_fmt(&mut as_html, p)?;
         let b = Builder::default();
         Ok(b.clean(&as_html).to_string())
     }
@@ -50,29 +50,28 @@ pub struct To{
 
 pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, query: web::Query<To>) -> impl Responder {
     let (id,) = path.into_inner();
-    let lev = data.config.levels.0.get(&id);
-    if let None = lev {
-        return HttpResponse::NotFound().body("404 not found");
-    }
-    let lev = lev.unwrap();
+    let lev = match data.config.levels.0.get(&id) {
+        None => return HttpResponse::NotFound().body("404 not found"),
+        Some(l) => l,
+    };
     if let Some(a) = &lev.key {
         if a != &query.answer {
             return HttpResponse::Forbidden().content_type("text/html").body(Wrong{
                 strings: data.config.strings.clone(),
                 links: data.config.links.clone()
-            }.render().unwrap());
+            }.render().expect("failed to render"));
         }
     }
-    let next: Option<Level>;
-    if let Some(n) = &lev.next {
-        next = Some(data.config.levels.0.get(&n.to).expect("Error: level not found").to_owned());
-    } else {
-        next = None;
-    }
+    let next = lev.next
+        .as_ref()
+        .map(|n| data.config.levels.0
+            .get(&n.to)
+            .expect("Error: level not found")
+            .to_owned());
     HttpResponse::Ok().content_type("text/html").body(LevelPage{
         strings: data.config.strings.clone(),
         level: lev.clone(),
         links: data.config.links.clone(),
-        next: next
-    }.render().unwrap())
+        next
+    }.render().expect("failed to render"))
 }
