@@ -72,7 +72,7 @@
         <h4>{{config.strings.name}}</h4>
         {% block content %}{% endblock %}
     </div>
-    <div class="footnote">{{config.strings.copyright|safe}}
+    <div class="footnote">{{config.strings.copyright}}
         {%- for link in config.links -%}
         &bull;<a href="{{link.to}}">{{link.caption}}</a>
         {%- endfor -%}
