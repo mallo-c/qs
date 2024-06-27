@@ -75,7 +75,7 @@ pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, quer
 
 pub async fn show_attachment(req: HttpRequest, data: web::Data<State>, path: web::Path<(String,)>) -> impl Responder {
     let (file,) = path.into_inner();
-    let src = match data.config.files.get(&file) {
+    let src = match data.config.attachments.get(&file) {
         Some(s) => s,
         None => {
             return HttpResponse::NotFound().finish();

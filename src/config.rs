@@ -48,7 +48,7 @@ pub struct Config {
     #[serde(default)]
     pub links: Vec<Link>,
     #[serde(default)]
-    pub files: HashMap<String, String>,
+    pub attachments: HashMap<String, String>,
 }
 
 mod defaults {
