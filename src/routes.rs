@@ -1,5 +1,6 @@
 use std::sync::Arc;
-use actix_web::{web, HttpResponse, Responder};
+use actix_files::NamedFile;
+use actix_web::{web, HttpResponse, HttpRequest, Responder};
 use askama::Template;
 use serde::Deserialize;
 
@@ -72,4 +73,19 @@ pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, quer
         config: Arc::clone(&data.config),
         next
     }.render().expect("failed to render"))
+}
+
+pub async fn show_attachment(req: HttpRequest, data: web::Data<State>, path: web::Path<(String,)>) -> impl Responder {
+    let (file,) = path.into_inner();
+    let src = match data.config.files.get(&file) {
+        Some(s) => s,
+        None => {
+            return HttpResponse::NotFound().finish();
+        }
+    };
+    if src.starts_with("http://") || src.starts_with("https://") {
+        return HttpResponse::Found().insert_header(("Location", src.clone())).finish();
+    }
+    let f = NamedFile::open(src).unwrap();
+    f.into_response(&req)
 }

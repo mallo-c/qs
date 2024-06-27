@@ -46,7 +46,9 @@ pub struct Config {
     pub strings: Strings,
     pub levels: Levels,
     #[serde(default)]
-    pub links: Vec<Link>
+    pub links: Vec<Link>,
+    #[serde(default)]
+    pub files: HashMap<String, String>,
 }
 
 mod defaults {

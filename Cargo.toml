@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 actix-web = "4.5.1"
 serde = {version = "1.0.202", features = ["derive"]}
-serde_yml = "0.0.8"
+serde_yml = "0.0.10"
 argh = "0.1.12"
 askama = "0.12.1"
 env_logger = "0.11.3"
@@ -15,3 +15,4 @@ hex = "0.4.3"
 rand_chacha = "0.3.1"
 ammonia = "4.0.0"
 pulldown-cmark = "0.11.0"
+actix-files = "0.6.6"

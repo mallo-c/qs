@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use actix_web::{web::{self, Data}, App, HttpResponse, HttpServer};
 use argh::{FromArgs, from_env};
-use routes::show_level;
+use routes::{show_attachment, show_level};
 use crate::config::Config;
 
 #[derive(FromArgs)]
@@ -48,6 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                                     .append_header(("Location", "/level/start"))
                                                     .body("")}))
             .route("/level/{lev}", web::get().to(show_level))
+            .route("/file/{file}", web::get().to(show_attachment))
     })
         .bind(SocketAddrV4::new("0.0.0.0".parse()?, args.port))?
         .run()
