@@ -1226,6 +1226,7 @@ dependencies = [
  "ammonia",
  "argh",
  "askama",
+ "base64",
  "env_logger",
  "hex",
  "html-escape",

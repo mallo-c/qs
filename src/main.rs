@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                                     .append_header(("Location", "/level/start"))
                                                     .body("")}))
             .route("/level/{lev}", web::get().to(show_level))
-            .route("/file/{file}", web::get().to(show_attachment))
+            .route("/a/{file}", web::get().to(show_attachment))
     })
         .bind(SocketAddrV4::new("0.0.0.0".parse()?, args.port))?
         .run()

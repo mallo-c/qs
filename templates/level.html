@@ -9,4 +9,12 @@
     <button type="submit">{{n.caption}}</button>
 </form>
 {% endif %}
+<ul class="attachments">
+    {%- for attach in attachments.iter() %}
+    <li><img class="attach-icon" src="{{attach.icon.data_url()}}"><a href="/a/{{attach.file}}"
+        {%- if attach.download %} download="download"
+        {%- endif -%}
+    >{{attach.name}}</a></li>
+    {%- endfor %}
+</ul>
 {% endblock %}

@@ -61,6 +61,9 @@ mod defaults {
     pub fn back() -> String {
         "Go back".to_string()
     }
+    pub fn download() -> bool {
+        false
+    }
 }
 
 #[derive(Deserialize, Clone)]
@@ -81,6 +84,31 @@ pub struct Level {
     pub legend: String,
     pub next: Option<Next>,
     pub key: Option<String>,
+    #[serde(default)]
+    pub attachments: Vec<Attachment>
+}
+
+#[derive(Deserialize, Clone)]
+pub struct Attachment {
+    pub name: String,
+    #[serde(default)]
+    pub icon: Icon,
+    pub file: String,
+    #[serde(default="defaults::download")]
+    pub download: bool,
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(rename_all = "lowercase", deny_unknown_fields)]
+pub enum Icon {
+    #[default]
+    File,
+    Link,
+    Download,
+    Image,
+    Media,
+    Text,
+    Archive,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

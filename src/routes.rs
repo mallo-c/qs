@@ -1,3 +1,4 @@
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use std::sync::Arc;
 use actix_files::NamedFile;
 use actix_web::{web, HttpResponse, HttpRequest, Responder};
@@ -7,7 +8,7 @@ use serde::Deserialize;
 use crate::{
     config::Level, State
 };
-use crate::config::Config;
+use crate::config::{Attachment, Config, Icon};
 
 mod filters {
     use std::fmt::Display;
@@ -32,7 +33,8 @@ mod filters {
 struct LevelPage {
     pub config: Arc<Config>,
     pub level: Level,
-    pub next: Option<Level>
+    pub next: Option<Level>,
+    pub attachments: Vec<Attachment>
 }
 
 #[derive(Template)]
@@ -45,6 +47,23 @@ struct Wrong {
 pub struct To{
     #[serde(default="String::new")]
     pub answer: String,
+}
+
+impl Icon {
+    pub fn svg(&self) -> &'static str {
+        match self {
+            Icon::File => include_str!("../media/file.svg"),
+            Icon::Link => include_str!("../media/download.svg"),
+            Icon::Download => include_str!("../media/download.svg"),
+            Icon::Image => include_str!("../media/image.svg"),
+            Icon::Media => include_str!("../media/media.svg"),
+            Icon::Text => include_str!("../media/text.svg"),
+            Icon::Archive => include_str!("../media/archive.svg")
+        }
+    }
+    pub fn data_url(&self) -> String {
+        format!("data:image/svg+xml;utf-8;base64,{}", STANDARD.encode(self.svg()))
+    }
 }
 
 pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, query: web::Query<To>) -> impl Responder {
@@ -69,6 +88,7 @@ pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, quer
     HttpResponse::Ok().content_type("text/html").body(LevelPage{
         level: lev.clone(),
         config: Arc::clone(&data.config),
+        attachments: lev.attachments.clone(),
         next
     }.render().expect("failed to render"))
 }
