@@ -55,9 +55,6 @@ mod defaults {
     pub fn copyright() -> String {
         "Powered by qs".to_string()
     }
-    pub fn loading() -> String {
-        "Loading...".to_string()
-    }
     pub fn wrong_answer() -> String {
         "Wrong answer".to_string()
     }
@@ -71,8 +68,6 @@ pub struct Strings {
     pub name: String,
     #[serde(default="defaults::wrong_answer")]
     pub wrong_answer: String,
-    #[serde(default="defaults::loading")]
-    pub loading: String,
     #[serde(default="defaults::copyright")]
     pub copyright: String,
     #[serde(default="defaults::back")]

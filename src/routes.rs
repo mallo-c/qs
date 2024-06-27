@@ -45,8 +45,6 @@ struct Wrong {
 pub struct To{
     #[serde(default="String::new")]
     pub answer: String,
-    #[serde(default="String::new")]
-    pub from: String,
 }
 
 pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, query: web::Query<To>) -> impl Responder {
