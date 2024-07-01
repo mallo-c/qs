@@ -1,5 +1,6 @@
 mod routes;
 mod config;
+mod level;
 
 use std::error::Error;
 use std::net::SocketAddrV4;
@@ -7,6 +8,7 @@ use std::sync::Arc;
 
 use actix_web::{web::{self, Data}, App, HttpResponse, HttpServer};
 use argh::{FromArgs, from_env};
+use level::LevelManager;
 use routes::{show_attachment, show_level};
 use crate::config::Config;
 
@@ -30,6 +32,7 @@ fn __argh_from_str_fn_config(file: &str) -> Result<Config, String> {
 
 struct State {
     config: Arc<Config>,
+    level_manager: LevelManager
 }
 
 #[actix_web::main]
@@ -40,6 +43,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let config = Arc::new(args.config);
     let d = Data::new(State{
         config: Arc::clone(&config),
+        level_manager: LevelManager::from_config(&config).unwrap()
     });
     HttpServer::new(move ||{
         App::new()

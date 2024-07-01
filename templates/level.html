@@ -1,14 +1,16 @@
 {% extends "layout.html" %}
 {% block content %}
 <div>{{level.legend|render|safe}}</div>
-{%- if let Some(n) = level.next %}
-<form action="/level/{{n.to}}">
-    {% if let Some(_) = next.as_ref().unwrap().key -%}
+{%- match level.next %}
+{% when Next::Button{caption, to} %}
+<form action="/level/{{to.id}}">
+    {% if let Some(_) = to.key -%}
     <p><input name="answer"></p>
     {%- endif %}
-    <button type="submit">{{n.caption}}</button>
+    <button type="submit">{{caption}}</button>
 </form>
-{% endif %}
+{% when Next::None %}
+{%- endmatch %}
 <ul class="attachments">
     {%- for attach in attachments.iter() %}
     <li><img class="attach-icon" src="{{attach.icon.data_url()}}"><a href="/a/{{attach.file}}"

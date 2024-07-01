@@ -6,7 +6,7 @@ use askama::Template;
 use serde::Deserialize;
 
 use crate::{
-    config::Level, State
+    level::{Level, Next}, State
 };
 use crate::config::{Attachment, Config, Icon};
 
@@ -32,8 +32,7 @@ mod filters {
 #[template(path = "level.html")]
 struct LevelPage {
     pub config: Arc<Config>,
-    pub level: Level,
-    pub next: Option<Level>,
+    pub level: Arc<Level>,
     pub attachments: Vec<Attachment>
 }
 
@@ -68,7 +67,7 @@ impl Icon {
 
 pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, query: web::Query<To>) -> impl Responder {
     let (id,) = path.into_inner();
-    let lev = match data.config.levels.0.get(&id) {
+    let lev = match data.level_manager.get(&id) {
         None => return HttpResponse::NotFound().body("404 not found"),
         Some(l) => l,
     };
@@ -79,17 +78,10 @@ pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, quer
             }.render().expect("failed to render"));
         }
     }
-    let next = lev.next
-        .as_ref()
-        .map(|n| data.config.levels.0
-            .get(&n.to)
-            .expect("Error: level not found")
-            .to_owned());
     HttpResponse::Ok().content_type("text/html").body(LevelPage{
         level: lev.clone(),
         config: Arc::clone(&data.config),
         attachments: lev.attachments.clone(),
-        next
     }.render().expect("failed to render"))
 }
 
