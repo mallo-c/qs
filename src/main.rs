@@ -48,9 +48,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     HttpServer::new(move ||{
         App::new()
             .app_data(d.clone())
-            .route("/", web::get().to(|| async {HttpResponse::Found()
-                                                    .append_header(("Location", "/level/start"))
-                                                    .body("")}))
+            .route("/", web::get().to(|data: web::Data<State>| async move {
+                                                    HttpResponse::Found()
+                                                        .append_header(("Location", format!("/level/{}", data.config.start)))
+                                                        .body("")}))
             .route("/level/{lev}", web::get().to(show_level))
             .route("/a/{file}", web::get().to(show_attachment))
     })

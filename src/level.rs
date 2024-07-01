@@ -9,7 +9,7 @@ pub struct LevelManager {
 impl LevelManager {
     pub fn from_config(c: &Config) -> Result<Self, LevelInspectError> {
         let mut st = HashMap::new();
-        Self::dfs(c, "start", None, &mut st)?;
+        Self::dfs(c, &c.start, None, &mut st)?;
         Ok(LevelManager {st})
     }
     fn dfs(c: &Config, st: &str, prev: Option<&str>, hm: &mut HashMap<String, Arc<Level>>) -> Result<(), LevelInspectError> {

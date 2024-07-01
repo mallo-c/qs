@@ -49,6 +49,8 @@ pub struct Config {
     pub links: Vec<Link>,
     #[serde(default)]
     pub attachments: HashMap<String, String>,
+    #[serde(default="defaults::start_level")]
+    pub start: String
 }
 
 mod defaults {
@@ -60,6 +62,9 @@ mod defaults {
     }
     pub fn back() -> String {
         "Go back".to_string()
+    }
+    pub fn start_level() -> String {
+        "start".to_string()
     }
     pub fn download() -> bool {
         false
