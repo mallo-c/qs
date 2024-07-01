@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, sync::Arc};
+use std::{collections::{HashMap, HashSet}, fmt::Display, sync::Arc};
 
 use crate::config::{Attachment, Config};
 
@@ -9,13 +9,18 @@ pub struct LevelManager {
 impl LevelManager {
     pub fn from_config(c: &Config) -> Result<Self, LevelInspectError> {
         let mut st = HashMap::new();
-        Self::dfs(c, &c.start, None, &mut st)?;
+        let mut visited = HashSet::new();
+        Self::dfs(c, &c.start, None, &mut st, &mut visited)?;
         Ok(LevelManager {st})
     }
-    fn dfs(c: &Config, st: &str, prev: Option<&str>, hm: &mut HashMap<String, Arc<Level>>) -> Result<(), LevelInspectError> {
+    fn dfs(c: &Config, st: &str, prev: Option<&str>, hm: &mut HashMap<String, Arc<Level>>, vis: &mut HashSet<String>) -> Result<(), LevelInspectError> {
         if prev.is_some_and(|x| x == st) {
             return Err(LevelInspectError::LoopDetected);
         }
+        if vis.contains(st) {
+            return Ok(());
+        }
+        vis.insert(st.to_string());
         let lev = match c.levels.0.get(st) {
             None => return Err(LevelInspectError::NotFound(st.to_string())),
             Some(x) => x,
@@ -26,7 +31,7 @@ impl LevelManager {
             next: match lev.next {
                 None => Next::None,
                 Some(crate::config::Next{ref to, ref caption}) => {
-                    Self::dfs(c, to, Some(st), hm)?;
+                    Self::dfs(c, to, Some(st), hm, vis)?;
                     Next::Button { caption: caption.clone(), to: hm.get(to).ok_or(LevelInspectError::NotFound(to.to_string()))?.clone() }
                 },
             },
