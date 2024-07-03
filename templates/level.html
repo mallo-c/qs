@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
 {% block content %}
 <div>{{level.legend|render|safe}}</div>
+<ul class="attachments">
+    {%- for attach in attachments.iter() %}
+    <li><img class="attach-icon" src="{{attach.icon.data_url()}}"><a href="/a/{{attach.file}}"
+        {%- if attach.download %} download="download"
+        {%- endif -%}
+    >{{attach.name}}</a></li>
+    {%- endfor %}
+</ul>
 {%- match level.next %}
 {% when Next::Button{caption, to} %}
 <form action="/l/{{to.id}}">
@@ -11,12 +19,4 @@
 </form>
 {% when Next::None %}
 {%- endmatch %}
-<ul class="attachments">
-    {%- for attach in attachments.iter() %}
-    <li><img class="attach-icon" src="{{attach.icon.data_url()}}"><a href="/a/{{attach.file}}"
-        {%- if attach.download %} download="download"
-        {%- endif -%}
-    >{{attach.name}}</a></li>
-    {%- endfor %}
-</ul>
 {% endblock %}
