@@ -1,6 +1,6 @@
 use std::{collections::{HashMap, HashSet}, error::Error, fmt::Display, sync::Arc};
 
-use crate::config::{Attachment, Config};
+use crate::config::Config;
 
 pub struct LevelManager {
     st: HashMap<String, Arc<Level>>,
@@ -56,7 +56,6 @@ impl LevelManager {
                 },
             },
             key: lev.key.clone(),
-            attachments: lev.attachments.clone()
         };
         hm.insert(st.to_string(), Arc::new(lev));
         Ok(())
@@ -70,8 +69,7 @@ pub struct Level {
     pub id: String,
     pub legend: String,
     pub next: Next,
-    pub key: Option<String>,
-    pub attachments: Vec<Attachment>
+    pub key: Option<String>
 }
 
 pub enum Next {
