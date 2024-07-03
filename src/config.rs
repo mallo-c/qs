@@ -53,17 +53,12 @@ pub struct Config {
     pub strings: Strings,
     pub levels: Levels,
     #[serde(default)]
-    pub links: Vec<Link>,
-    #[serde(default)]
     pub attachments: HashMap<String, String>,
     #[serde(default="defaults::start_level")]
     pub start: String
 }
 
 mod defaults {
-    pub fn copyright() -> String {
-        "Powered by qs".to_string()
-    }
     pub fn wrong_answer() -> String {
         "Wrong answer".to_string()
     }
@@ -83,8 +78,6 @@ pub struct Strings {
     pub name: String,
     #[serde(default="defaults::wrong_answer")]
     pub wrong_answer: String,
-    #[serde(default="defaults::copyright")]
-    pub copyright: String,
     #[serde(default="defaults::back")]
     pub back: String,
     #[serde(default="defaults::not_found")]
