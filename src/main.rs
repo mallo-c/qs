@@ -47,9 +47,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .app_data(d.clone())
             .route("/", web::get().to(|data: web::Data<State>| async move {
                                                     HttpResponse::Found()
-                                                        .append_header(("Location", format!("/level/{}", data.config.start)))
+                                                        .append_header(("Location", format!("/l/{}", data.config.start)))
                                                         .body("")}))
-            .route("/level/{lev}", web::get().to(show_level))
+            .route("/l/{lev}", web::get().to(show_level))
             .route("/a/{file}", web::get().to(show_attachment))
     })
         .bind(SocketAddrV4::new("0.0.0.0".parse()?, args.port))?
