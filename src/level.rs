@@ -22,7 +22,7 @@ impl LevelManager {
         for lev_id in c.levels.0.keys() {
             let r = Self::find_root(lev_id, &pred);
             if !visited.contains(r) {
-                Self::dfs(c, &c.start, &mut st, &mut visited)?;
+                Self::dfs(c, r, &mut st, &mut visited)?;
             }
         }
         Ok(LevelManager {st})
