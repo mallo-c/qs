@@ -10,15 +10,12 @@ impl LevelManager {
     pub fn from_config(c: &Config) -> Result<Self, LevelInspectError> {
         let mut st = HashMap::new();
         let mut visited = HashSet::new();
-        Self::dfs(c, &c.start, None, &mut st, &mut visited)?;
+        Self::dfs(c, &c.start, &mut st, &mut visited)?;
         Ok(LevelManager {st})
     }
-    fn dfs(c: &Config, st: &str, prev: Option<&str>, hm: &mut HashMap<String, Arc<Level>>, vis: &mut HashSet<String>) -> Result<(), LevelInspectError> {
-        if prev.is_some_and(|x| x == st) {
-            return Err(LevelInspectError::LoopDetected);
-        }
+    fn dfs(c: &Config, st: &str, hm: &mut HashMap<String, Arc<Level>>, vis: &mut HashSet<String>) -> Result<(), LevelInspectError> {
         if vis.contains(st) {
-            return Ok(());
+            return Err(LevelInspectError::LoopDetected);
         }
         vis.insert(st.to_string());
         let lev = match c.levels.0.get(st) {
@@ -31,7 +28,7 @@ impl LevelManager {
             next: match lev.next {
                 None => Next::None,
                 Some(crate::config::Next{ref to, ref caption}) => {
-                    Self::dfs(c, to, Some(st), hm, vis)?;
+                    Self::dfs(c, to, hm, vis)?;
                     Next::Button { caption: caption.clone(), to: hm.get(to).ok_or(LevelInspectError::NotFound(to.to_string()))?.clone() }
                 },
             },
