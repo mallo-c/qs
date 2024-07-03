@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::{self, Debug, Display}};
+use std::{collections::HashMap, fmt::{self, Debug, Display}, ops::Deref};
 use std::str::FromStr;
 
 use serde::{de::Visitor, Deserialize, Serialize};
@@ -26,6 +26,13 @@ impl<'de> Visitor<'de> for LevelsVisitor {
 
 #[derive(Clone)]
 pub struct Levels(pub HashMap<String, Level>);
+
+impl Deref for Levels {
+    type Target = HashMap<String, Level>;
+    fn deref(&self) -> &Self::Target {
+        return &self.0;
+    }
+}
 
 impl<'de> Deserialize<'de> for Levels {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

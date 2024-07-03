@@ -11,15 +11,15 @@ impl LevelManager {
         let mut st = HashMap::new();
         let mut visited = HashSet::new();
         let mut pred = HashMap::new();
-        for lev_id in c.levels.0.keys() {
-            let lev = c.levels.0.get(lev_id).ok_or(LevelInspectError::NotFound(lev_id.clone()))?;
+        for lev_id in c.levels.keys() {
+            let lev = c.levels.get(lev_id).ok_or(LevelInspectError::NotFound(lev_id.clone()))?;
             match lev.next {
                 None => (),
                 Some(ref n) => {pred.insert(n.to.clone(), lev_id.clone());}
             }
         }
         let pred = pred;
-        for lev_id in c.levels.0.keys() {
+        for lev_id in c.levels.keys() {
             let r = Self::find_root(lev_id, &pred);
             if !visited.contains(r) {
                 Self::dfs(c, r, &mut st, &mut visited)?;
@@ -41,7 +41,7 @@ impl LevelManager {
             return Err(LevelInspectError::LoopDetected);
         }
         vis.insert(st.to_string());
-        let lev = match c.levels.0.get(st) {
+        let lev = match c.levels.get(st) {
             None => return Err(LevelInspectError::NotFound(st.to_string())),
             Some(x) => x,
         };
