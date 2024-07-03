@@ -66,6 +66,9 @@ mod defaults {
     pub fn start_level() -> String {
         "start".to_string()
     }
+    pub fn not_found() -> String {
+        "404 Level not found".to_string()
+    }
     pub fn download() -> bool {
         false
     }
@@ -79,7 +82,9 @@ pub struct Strings {
     #[serde(default="defaults::copyright")]
     pub copyright: String,
     #[serde(default="defaults::back")]
-    pub back: String
+    pub back: String,
+    #[serde(default="defaults::not_found")]
+    pub not_found: String,
 }
 
 #[derive(Deserialize, Clone)]

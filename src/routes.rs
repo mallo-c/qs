@@ -42,6 +42,12 @@ struct Wrong {
     pub config: Arc<Config>
 }
 
+#[derive(Template)]
+#[template(path = "404.html")]
+struct NotFound {
+    pub config: Arc<Config>
+}
+
 #[derive(Deserialize)]
 pub struct To{
     #[serde(default="String::new")]
@@ -68,7 +74,9 @@ impl Icon {
 pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, query: web::Query<To>) -> impl Responder {
     let (id,) = path.into_inner();
     let lev = match data.level_manager.get(&id) {
-        None => return HttpResponse::NotFound().body("404 not found"),
+        None => return HttpResponse::NotFound().body(NotFound{
+            config: Arc::clone(&data.config)
+        }.render().expect("failed to render")),
         Some(l) => l,
     };
     if let Some(a) = &lev.key {
