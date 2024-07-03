@@ -10,10 +10,33 @@ impl LevelManager {
     pub fn from_config(c: &Config) -> Result<Self, LevelInspectError> {
         let mut st = HashMap::new();
         let mut visited = HashSet::new();
-        Self::dfs(c, &c.start, &mut st, &mut visited)?;
+        let mut pred = HashMap::new();
+        for lev_id in c.levels.0.keys() {
+            let lev = c.levels.0.get(lev_id).ok_or(LevelInspectError::NotFound(lev_id.clone()))?;
+            match lev.next {
+                None => (),
+                Some(ref n) => {pred.insert(n.to.clone(), lev_id.clone());}
+            }
+        }
+        let pred = pred;
+        for lev_id in c.levels.0.keys() {
+            let r = Self::find_root(lev_id, &pred);
+            if !visited.contains(r) {
+                Self::dfs(c, &c.start, &mut st, &mut visited)?;
+            }
+        }
         Ok(LevelManager {st})
     }
-    fn dfs(c: &Config, st: &str, hm: &mut HashMap<String, Arc<Level>>, vis: &mut HashSet<String>) -> Result<(), LevelInspectError> {
+    fn find_root<'a, 'b: 'a>(l: &'a String, pred: &'b HashMap<String, String>) -> &'a String {
+        let mut l = l;
+        loop {
+            match pred.get(l) {
+                Some(u) => l = u,
+                None => break l,
+            }
+        }
+    }
+    fn dfs(c: &Config, st: &String, hm: &mut HashMap<String, Arc<Level>>, vis: &mut HashSet<String>) -> Result<(), LevelInspectError> {
         if vis.contains(st) {
             return Err(LevelInspectError::LoopDetected);
         }
