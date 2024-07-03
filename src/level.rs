@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, fmt::Display, sync::Arc};
+use std::{collections::{HashMap, HashSet}, error::Error, fmt::Display, sync::Arc};
 
 use crate::config::{Attachment, Config};
 
@@ -84,6 +84,8 @@ pub enum LevelInspectError {
     LoopDetected,
     NotFound(String),
 }
+
+impl Error for LevelInspectError {}
 
 impl Display for LevelInspectError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

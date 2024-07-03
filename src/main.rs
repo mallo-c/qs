@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let config = Arc::new(args.config);
     let d = Data::new(State{
         config: Arc::clone(&config),
-        level_manager: LevelManager::from_config(&config).unwrap()
+        level_manager: LevelManager::from_config(&config).map_err(|error| Box::new(error) as Box<dyn Error>)?
     });
     HttpServer::new(move ||{
         App::new()
