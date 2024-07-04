@@ -6,6 +6,11 @@
     <title>{{config.strings.name}}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
     <style>
+        :root {
+            --primary: {{config.colors.primary}};
+            --secondary: {{config.colors.secondary}};
+            --background: {{config.colors.background}};
+        }
         html, body {
             width: 100%;
             height: 100%;
@@ -16,7 +21,7 @@
         }
         body {
             background: #000;
-            color: #fff;
+            color: var(--primary);
             font-family: 'Open Sans', 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
             font-weight: 300;
             display: flex;
@@ -26,15 +31,16 @@
             font-size: 24px;
         }
         a {
-            color: #fff!important;
-            text-decoration: none;
+            color: var(--primary);
+            text-decoration: underline 1px solid var(--primary);
         }
         a:hover, a:focus {
-            text-decoration: underline 1px solid #fff;
+            color: var(--secondary);
+            text-decoration-color: var(--secondary);
         }
         body::selection {
-            background: #fff;
-            color: #000;
+            background: var(--primary);
+            color: var(--background);
         }
         #root {
             width: 80vw;
@@ -56,18 +62,18 @@
         }
         input {
             border: none;
-            border-bottom: 2px dotted #fff;
+            border-bottom: 2px dotted var(--primary);
             width: 100%;
         }
         button, input[type=submit] {
             cursor: pointer;
-            border: 2px solid #fff;
+            border: 2px solid var(--primary);
             user-select: none;
             align-self: flex-start;
         }
         button:hover, button:focus {
-            background: #fff;
-            color: #000;
+            background: var(--primary);
+            color: var(--background);
             transition: all 300ms ease-out;
         }
         .footnote {

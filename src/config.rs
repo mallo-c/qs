@@ -55,7 +55,29 @@ pub struct Config {
     #[serde(default)]
     pub attachments: HashMap<String, String>,
     #[serde(default="defaults::start_level")]
-    pub start: String
+    pub start: String,
+    #[serde(default)]
+    pub colors: Colors
+}
+
+#[derive(Deserialize, Clone)]
+pub struct Colors {
+    #[serde(default="defaults::color_primary")]
+    pub primary: String,
+    #[serde(default="defaults::color_secondary")]
+    pub secondary: String,
+    #[serde(default="defaults::color_background")]
+    pub background: String
+}
+
+impl Default for Colors {
+    fn default() -> Self {
+        Self {
+            primary: defaults::color_primary(),
+            secondary: defaults::color_secondary(),
+            background: defaults::color_background()
+        }
+    }
 }
 
 mod defaults {
@@ -73,6 +95,15 @@ mod defaults {
     }
     pub fn sanitize_legend() -> bool {
         true
+    }
+    pub fn color_primary() -> String {
+        "#ffffff".to_owned()
+    }
+    pub fn color_secondary() -> String {
+        "#00ffff".to_owned()
+    }
+    pub fn color_background() -> String {
+        "#ffffff".to_owned()
     }
 }
 
