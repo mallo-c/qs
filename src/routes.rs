@@ -22,8 +22,14 @@ mod filters {
         let p = Parser::new(&src);
         let mut as_html = String::new();
         html::write_html_fmt(&mut as_html, p)?;
+        Ok(as_html)
+    }
+    pub fn sanitize<T>(src: T) -> askama::Result<String>
+    where T: Display
+    {
+        let src = src.to_string();
         let b = Builder::default();
-        Ok(b.clean(&as_html).to_string())
+        Ok(b.clean(&src).to_string())
     }
 }
 

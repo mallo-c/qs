@@ -56,6 +56,7 @@ impl LevelManager {
                 },
             },
             key: lev.key.clone(),
+            sanitize_legend: lev.sanitize_legend,
         };
         hm.insert(st.to_string(), Arc::new(lev));
         Ok(())
@@ -69,7 +70,8 @@ pub struct Level {
     pub id: String,
     pub legend: String,
     pub next: Next,
-    pub key: Option<String>
+    pub key: Option<String>,
+    pub sanitize_legend: bool,
 }
 
 pub enum Next {

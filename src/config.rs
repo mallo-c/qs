@@ -71,6 +71,9 @@ mod defaults {
     pub fn not_found() -> String {
         "404 Level not found".to_string()
     }
+    pub fn sanitize_legend() -> bool {
+        true
+    }
 }
 
 #[derive(Deserialize, Clone)]
@@ -89,6 +92,8 @@ pub struct Level {
     #[serde(skip)]
     pub id: String,
     pub legend: String,
+    #[serde(default="defaults::sanitize_legend")]
+    pub sanitize_legend: bool,
     pub next: Option<Next>,
     pub key: Option<String>,
 }
