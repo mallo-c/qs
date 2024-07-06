@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::{self, Debug, Display}, ops::Deref};
+use std::{collections::HashMap, fmt::{self, Debug, Display}, fs::read_dir, ops::Deref};
 use std::str::FromStr;
 
 use serde::{de::Visitor, Deserialize, Serialize};
@@ -42,6 +42,56 @@ impl<'de> Deserialize<'de> for Levels {
     }
 }
 
+#[derive(Default, Clone)]
+pub struct Attachments(pub HashMap<String, String>);
+
+impl Deref for Attachments {
+    type Target = HashMap<String, String>;
+    fn deref(&self) -> &Self::Target {
+        return &self.0;
+    }
+}
+
+impl<'de> Deserialize<'de> for Attachments {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de> {
+        deserializer.deserialize_map(AttachmentsVisitor)
+    }
+}
+
+struct AttachmentsVisitor;
+
+impl<'de> Visitor<'de> for AttachmentsVisitor {
+    type Value = Attachments;
+
+    fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "mapping from ID to path")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::MapAccess<'de>, {
+                let mut res = HashMap::<String, String>::new();
+            while let Some((k, v)) = map.next_entry::<String, String>()? {
+                if k != "_" {
+                    res.insert(k, v);
+                } else {
+                    match read_dir(&v) {
+                        Ok(d) => for entry in d {
+                            match entry {
+                                Err(e) => return Err(serde::de::Error::custom(format!("failed to read dir {v}: {e}"))),
+                                Ok(r) => {res.insert(r.file_name().to_str().unwrap().into(), r.path().to_str().unwrap().into());}
+                            }
+                        }
+                        Err(e) => return Err(serde::de::Error::custom(format!("failed to read dir {v}: {e}")))
+                    }
+                }
+            }
+            Ok(Attachments(res))
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Link {
     pub caption: String,
@@ -53,7 +103,7 @@ pub struct Config {
     pub strings: Strings,
     pub levels: Levels,
     #[serde(default)]
-    pub attachments: HashMap<String, String>,
+    pub attachments: Attachments,
     #[serde(default="defaults::start_level")]
     pub start: String,
     #[serde(default)]
