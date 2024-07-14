@@ -7,6 +7,6 @@ RUN cargo build --release
 
 FROM alpine
 WORKDIR /usr/share/qs
-COPY --from=builder /usr/src/qs/target/release/qs /usr/share/qs
+COPY --from=builder /usr/src/qs/target/release/qs /usr/bin/qs
 
-ENTRYPOINT [ "/usr/share/qs/qs" ]
+ENTRYPOINT [ "/usr/bin/qs" ]
