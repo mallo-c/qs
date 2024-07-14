@@ -1,8 +1,0 @@
-services:
-  qs:
-    build: .
-    command: ["--config", "/config.yml", "-p", "8080"]
-    volumes:
-      - ./config.yml:/config.yml
-    ports:
-      - 8080:8080

@@ -5,7 +5,8 @@ COPY . /usr/src/qs
 WORKDIR /usr/src/qs
 RUN cargo build --release
 
-FROM scratch
-COPY --from=builder /usr/src/qs/target/release/qs /qs
+FROM alpine
+WORKDIR /usr/share/qs
+COPY --from=builder /usr/src/qs/target/release/qs /usr/share/qs
 
-ENTRYPOINT [ "/qs" ]
+ENTRYPOINT [ "/usr/share/qs/qs" ]
