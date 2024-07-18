@@ -1,11 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <div>
-    {%- if level.sanitize_legend -%}
-    {{level.legend|render|sanitize|safe}}
-    {%- else -%}
     {{level.legend|render|safe}}
-    {%- endif -%}
 </div>
 {%- match level.next %}
 {% when Next::Button{caption, to} %}
