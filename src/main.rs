@@ -6,10 +6,10 @@ use std::error::Error;
 use std::net::SocketAddrV4;
 use std::sync::Arc;
 
-use actix_web::{web::{self, Data}, App, HttpResponse, HttpServer};
 use argh::{FromArgs, from_env};
+use axum::{Router, routing::get};
 use level::LevelManager;
-use routes::{show_attachment, show_level};
+use routes::{root, show_attachment, show_level};
 use crate::config::Config;
 
 #[derive(FromArgs)]
@@ -27,33 +27,28 @@ fn __argh_from_str_fn_config(file: &str) -> Result<Config, String> {
     Config::from_path(file).map_err(|e| e.to_string())
 }
 
-struct State {
+#[derive(Clone)]
+struct AppState {
     config: Arc<Config>,
-    level_manager: LevelManager
+    level_manager: Arc<LevelManager>
 }
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = from_env();
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     let config = Arc::new(args.config);
-    let d = Data::new(State{
+    let d = AppState{
         config: Arc::clone(&config),
-        level_manager: LevelManager::from_config(&config).map_err(|error| Box::new(error) as Box<dyn Error>)?
-    });
-    HttpServer::new(move ||{
-        App::new()
-            .app_data(d.clone())
-            .route("/", web::get().to(|data: web::Data<State>| async move {
-                                                    HttpResponse::Found()
-                                                        .append_header(("Location", format!("/l/{}", data.config.start)))
-                                                        .body("")}))
-            .route("/l/{lev}", web::get().to(show_level))
-            .route("/a/{file}", web::get().to(show_attachment))
-    })
-        .bind(SocketAddrV4::new("0.0.0.0".parse()?, args.port))?
-        .run()
-        .await
-        .map_err(|error| Box::new(error) as Box<dyn Error>)
+        level_manager: Arc::new(LevelManager::from_config(&config)?)
+    };
+    let r = Router::new()
+        .route("/", get(root))
+        .route("/l/:lev", get(show_level))
+        .route("/a/:file", get(show_attachment))
+        .with_state(d);
+    let l = tokio::net::TcpListener::bind(SocketAddrV4::new("0.0.0.0".parse().unwrap(), args.port)).await?;
+    axum::serve(l, r.into_make_service()).await?;
+    Ok(())
 }

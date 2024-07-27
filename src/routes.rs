@@ -1,11 +1,12 @@
 use std::sync::Arc;
-use actix_files::NamedFile;
-use actix_web::{web, HttpResponse, HttpRequest, Responder};
 use askama::Template;
 use serde::Deserialize;
+use axum::{body::Body, extract::{Path, Query, State}, response::Response};
+use mime_guess::from_path;
+use tokio::io::AsyncReadExt;
 
 use crate::{
-    level::{Level, Next}, State
+    level::{Level, Next}, AppState
 };
 use crate::config::Config;
 
@@ -50,38 +51,72 @@ pub struct To{
     pub answer: String,
 }
 
-pub async fn show_level(data: web::Data<State>, path: web::Path<(String,)>, query: web::Query<To>) -> impl Responder {
-    let (id,) = path.into_inner();
-    let lev = match data.level_manager.get(&id) {
-        None => return HttpResponse::NotFound().body(NotFound{
-            config: Arc::clone(&data.config)
-        }.render().expect("failed to render")),
-        Some(l) => l,
-    };
-    if let Some(a) = &lev.key {
-        if a != &query.answer {
-            return HttpResponse::Forbidden().content_type("text/html").body(Wrong{
-                config: Arc::clone(&data.config)
-            }.render().expect("failed to render"));
-        }
-    }
-    HttpResponse::Ok().content_type("text/html").body(LevelPage{
-        level: lev.clone(),
-        config: Arc::clone(&data.config),
-    }.render().expect("failed to render"))
+pub async fn root(State(s): State<AppState>) -> Response<Body> {
+    Response::builder()
+        .status(302)
+        .header("Location", format!("/l/{}", s.config.start))
+        .body(().into())
+        .unwrap()
 }
 
-pub async fn show_attachment(req: HttpRequest, data: web::Data<State>, path: web::Path<(String,)>) -> impl Responder {
-    let (file,) = path.into_inner();
-    let src = match data.config.attachments.get(&file) {
-        Some(s) => s,
-        None => {
-            return HttpResponse::NotFound().finish();
+pub async fn show_level(State(s): State<AppState>, Path((id,)): Path<(String,)>, Query(to): Query<To>) -> Response<String> {
+    let lev = if let Some(l) = s.level_manager.get(&id) { l } else {
+        return Response::builder()
+            .status(404)
+            .header("Content-Type", "text/html")
+            .body(NotFound{
+                    config: Arc::clone(&s.config)
+                }
+                .render()
+                .expect("failed to render")
+            )
+            .unwrap();
+    };
+    if let Some(a) = &lev.key {
+        if a != &to.answer {
+            return Response::builder()
+                .status(403)
+                .header("Content-Type", "text/html")
+                .body(Wrong{
+                        config: Arc::clone(&s.config)
+                    }
+                    .render()
+                    .expect("failed to render")
+                )
+                .unwrap();
         }
+    }
+    Response::builder()
+        .status(200)
+        .header("Content-Type", "text/html")
+        .body(LevelPage{
+                level: lev.clone(),
+                config: Arc::clone(&s.config),
+            }
+            .render()
+            .expect("failed to render")
+        )
+        .unwrap()
+}
+
+pub async fn show_attachment(State(s): State<AppState>, Path((file,)): Path<(String,)>) -> Response<Body> {
+    let src = if let Some(f) = s.config.attachments.get(&file) { f } else {
+        return Response::builder()
+            .status(404)
+            .header("Content-Type", "text/html")
+            .body(vec![].into())
+            .unwrap();
     };
     if src.starts_with("http://") || src.starts_with("https://") {
-        return HttpResponse::Found().insert_header(("Location", src.clone())).finish();
+        Response::builder().status(302).header("Location", src).body(().into()).unwrap()
+    } else {
+        let mut f = tokio::fs::File::open(src).await.unwrap();
+        let mut buf = vec![];
+        f.read(&mut buf).await.unwrap();
+        Response::builder()
+            .status(200)
+            .header("Content-Type", from_path(src).first_or_octet_stream().to_string())
+            .body(buf.into())
+            .unwrap()
     }
-    let f = NamedFile::open(src).unwrap();
-    f.into_response(&req)
 }

@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-web = "4.5.1"
+axum = "0.7.5"
+tokio = {version="1.39.1", features = ["full"]}
+mime_guess = "2.0.5"
 serde = {version = "1.0.202", features = ["derive"]}
 serde_yml = "0.0.11"
 argh = "0.1.12"
@@ -13,7 +15,5 @@ env_logger = "0.11.3"
 html-escape="0.2.13"
 hex = "0.4.3"
 rand_chacha = "0.3.1"
-ammonia = "4.0.0"
 pulldown-cmark = "0.11.0"
-actix-files = "0.6.6"
 base64 = "0.22.1"
