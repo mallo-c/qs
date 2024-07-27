@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::{self, Debug, Display}, fs::read_dir, ops::Deref};
+use std::{collections::HashMap, fmt::{self, Debug, Display}, fs::{read_dir, File}, io::{self, Read}, ops::Deref, path::Path};
 use std::str::FromStr;
 
 use serde::{de::Visitor, Deserialize, Serialize};
@@ -183,7 +183,7 @@ pub struct Next {
 #[derive(Debug)]
 pub enum Error {
     ConfigParseError(serde_yml::Error),
-    FileReadError(std::io::Error)
+    ReadError(std::io::Error)
 }
 
 impl std::error::Error for Error {}
@@ -192,7 +192,7 @@ impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
             Error::ConfigParseError(e) => write!(f, "could not parse config: {}", e),
-            Error::FileReadError(e) => write!(f, "could not open file: {}", e)
+            Error::ReadError(e) => write!(f, "could not read: {}", e)
         }
     }
 }
@@ -207,9 +207,12 @@ impl FromStr for Config {
 }
 
 impl Config {
-    pub fn from_file(name: &str) -> Result<Self, Error> {
-        std::fs::read_to_string(name)
-            .map_err(Error::FileReadError)
-            .and_then(|c| c.parse())
+    pub fn from_reader<R: Read>(f: R) -> Result<Self, Error> {
+        io::read_to_string(f)
+            .map_err(Error::ReadError)?
+            .parse()
+    }
+    pub fn from_path<P: AsRef<Path>>(p: P) -> Result<Self, Error> {
+        Self::from_reader(File::open(p).map_err(Error::ReadError)?)
     }
 }

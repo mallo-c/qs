@@ -24,7 +24,7 @@ struct Args {
 }
 
 fn __argh_from_str_fn_config(file: &str) -> Result<Config, String> {
-    Config::from_file(file).map_err(|e| e.to_string())
+    Config::from_path(file).map_err(|e| e.to_string())
 }
 
 struct State {
