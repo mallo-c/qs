@@ -1,4 +1,9 @@
-use std::{collections::{HashMap, HashSet}, error::Error, fmt::Display, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    fmt::Display,
+    sync::Arc,
+};
 
 use crate::config::Config;
 
@@ -12,10 +17,15 @@ impl LevelManager {
         let mut visited = HashSet::new();
         let mut pred = HashMap::new();
         for lev_id in c.levels.keys() {
-            let lev = c.levels.get(lev_id).ok_or(LevelInspectError::NotFound(lev_id.clone()))?;
+            let lev = c
+                .levels
+                .get(lev_id)
+                .ok_or(LevelInspectError::NotFound(lev_id.clone()))?;
             match lev.next {
                 None => (),
-                Some(ref n) => {pred.insert(n.to.clone(), lev_id.clone());}
+                Some(ref n) => {
+                    pred.insert(n.to.clone(), lev_id.clone());
+                }
             }
         }
         let pred = pred;
@@ -25,7 +35,7 @@ impl LevelManager {
                 Self::dfs(c, r, &mut st, &mut visited)?;
             }
         }
-        Ok(LevelManager {st})
+        Ok(LevelManager { st })
     }
     fn find_root<'a, 'b: 'a>(l: &'a String, pred: &'b HashMap<String, String>) -> &'a String {
         let mut l = l;
@@ -36,7 +46,12 @@ impl LevelManager {
             }
         }
     }
-    fn dfs(c: &Config, st: &String, hm: &mut HashMap<String, Arc<Level>>, vis: &mut HashSet<String>) -> Result<(), LevelInspectError> {
+    fn dfs(
+        c: &Config,
+        st: &String,
+        hm: &mut HashMap<String, Arc<Level>>,
+        vis: &mut HashSet<String>,
+    ) -> Result<(), LevelInspectError> {
         if vis.contains(st) {
             return Err(LevelInspectError::LoopDetected);
         }
@@ -50,10 +65,19 @@ impl LevelManager {
             legend: lev.legend.clone(),
             next: match lev.next {
                 None => Next::None,
-                Some(crate::config::Next{ref to, ref caption}) => {
+                Some(crate::config::Next {
+                    ref to,
+                    ref caption,
+                }) => {
                     Self::dfs(c, to, hm, vis)?;
-                    Next::Button { caption: caption.clone(), to: hm.get(to).ok_or(LevelInspectError::NotFound(to.to_string()))?.clone() }
-                },
+                    Next::Button {
+                        caption: caption.clone(),
+                        to: hm
+                            .get(to)
+                            .ok_or(LevelInspectError::NotFound(to.to_string()))?
+                            .clone(),
+                    }
+                }
             },
             key: lev.key.clone(),
         };
@@ -74,7 +98,7 @@ pub struct Level {
 
 pub enum Next {
     None,
-    Button{caption: String, to: Arc<Level>}
+    Button { caption: String, to: Arc<Level> },
 }
 
 #[derive(Debug)]

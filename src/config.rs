@@ -1,5 +1,12 @@
-use std::{collections::HashMap, fmt::{self, Debug, Display}, fs::{read_dir, File}, io::{self, Read}, ops::Deref, path::Path};
 use std::str::FromStr;
+use std::{
+    collections::HashMap,
+    fmt::{self, Debug, Display},
+    fs::{read_dir, File},
+    io::{self, Read},
+    ops::Deref,
+    path::Path,
+};
 
 use serde::{de::Visitor, Deserialize, Serialize};
 
@@ -13,8 +20,9 @@ impl<'de> Visitor<'de> for LevelsVisitor {
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::MapAccess<'de>, {
+    where
+        A: serde::de::MapAccess<'de>,
+    {
         let mut res = HashMap::<String, Level>::new();
         while let Some((k, mut v)) = map.next_entry::<String, Level>()? {
             k.clone_into(&mut v.id);
@@ -36,8 +44,9 @@ impl Deref for Levels {
 
 impl<'de> Deserialize<'de> for Levels {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de> {
+    where
+        D: serde::Deserializer<'de>,
+    {
         deserializer.deserialize_map(LevelsVisitor)
     }
 }
@@ -54,8 +63,9 @@ impl Deref for Attachments {
 
 impl<'de> Deserialize<'de> for Attachments {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de> {
+    where
+        D: serde::Deserializer<'de>,
+    {
         deserializer.deserialize_map(AttachmentsVisitor)
     }
 }
@@ -70,25 +80,41 @@ impl<'de> Visitor<'de> for AttachmentsVisitor {
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::MapAccess<'de>, {
-                let mut res = HashMap::<String, String>::new();
-            while let Some((k, v)) = map.next_entry::<String, String>()? {
-                if k != "_" {
-                    res.insert(k, v);
-                } else {
-                    match read_dir(&v) {
-                        Ok(d) => for entry in d {
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut res = HashMap::<String, String>::new();
+        while let Some((k, v)) = map.next_entry::<String, String>()? {
+            if k != "_" {
+                res.insert(k, v);
+            } else {
+                match read_dir(&v) {
+                    Ok(d) => {
+                        for entry in d {
                             match entry {
-                                Err(e) => return Err(serde::de::Error::custom(format!("failed to read dir {v}: {e}"))),
-                                Ok(r) => {res.insert(r.file_name().to_str().unwrap().into(), r.path().to_str().unwrap().into());}
+                                Err(e) => {
+                                    return Err(serde::de::Error::custom(format!(
+                                        "failed to read dir {v}: {e}"
+                                    )))
+                                }
+                                Ok(r) => {
+                                    res.insert(
+                                        r.file_name().to_str().unwrap().into(),
+                                        r.path().to_str().unwrap().into(),
+                                    );
+                                }
                             }
                         }
-                        Err(e) => return Err(serde::de::Error::custom(format!("failed to read dir {v}: {e}")))
+                    }
+                    Err(e) => {
+                        return Err(serde::de::Error::custom(format!(
+                            "failed to read dir {v}: {e}"
+                        )))
                     }
                 }
             }
-            Ok(Attachments(res))
+        }
+        Ok(Attachments(res))
     }
 }
 
@@ -104,20 +130,20 @@ pub struct Config {
     pub levels: Levels,
     #[serde(default)]
     pub attachments: Attachments,
-    #[serde(default="defaults::start_level")]
+    #[serde(default = "defaults::start_level")]
     pub start: String,
     #[serde(default)]
-    pub colors: Colors
+    pub colors: Colors,
 }
 
 #[derive(Deserialize, Clone)]
 pub struct Colors {
-    #[serde(default="defaults::color_primary")]
+    #[serde(default = "defaults::color_primary")]
     pub primary: String,
-    #[serde(default="defaults::color_secondary")]
+    #[serde(default = "defaults::color_secondary")]
     pub secondary: String,
-    #[serde(default="defaults::color_background")]
-    pub background: String
+    #[serde(default = "defaults::color_background")]
+    pub background: String,
 }
 
 impl Default for Colors {
@@ -125,7 +151,7 @@ impl Default for Colors {
         Self {
             primary: defaults::color_primary(),
             secondary: defaults::color_secondary(),
-            background: defaults::color_background()
+            background: defaults::color_background(),
         }
     }
 }
@@ -157,11 +183,11 @@ mod defaults {
 #[derive(Deserialize, Clone)]
 pub struct Strings {
     pub name: String,
-    #[serde(default="defaults::wrong_answer")]
+    #[serde(default = "defaults::wrong_answer")]
     pub wrong_answer: String,
-    #[serde(default="defaults::back")]
+    #[serde(default = "defaults::back")]
     pub back: String,
-    #[serde(default="defaults::not_found")]
+    #[serde(default = "defaults::not_found")]
     pub not_found: String,
 }
 
@@ -183,7 +209,7 @@ pub struct Next {
 #[derive(Debug)]
 pub enum Error {
     ConfigParseError(serde_yml::Error),
-    ReadError(std::io::Error)
+    ReadError(std::io::Error),
 }
 
 impl std::error::Error for Error {}
@@ -192,7 +218,7 @@ impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
             Error::ConfigParseError(e) => write!(f, "could not parse config: {}", e),
-            Error::ReadError(e) => write!(f, "could not read: {}", e)
+            Error::ReadError(e) => write!(f, "could not read: {}", e),
         }
     }
 }
@@ -201,16 +227,13 @@ impl FromStr for Config {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        serde_yml::from_str(s)
-            .map_err(Error::ConfigParseError)
+        serde_yml::from_str(s).map_err(Error::ConfigParseError)
     }
 }
 
 impl Config {
     pub fn from_reader<R: Read>(f: R) -> Result<Self, Error> {
-        io::read_to_string(f)
-            .map_err(Error::ReadError)?
-            .parse()
+        io::read_to_string(f).map_err(Error::ReadError)?.parse()
     }
     pub fn from_path<P: AsRef<Path>>(p: P) -> Result<Self, Error> {
         Self::from_reader(File::open(p).map_err(Error::ReadError)?)
