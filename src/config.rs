@@ -1,8 +1,9 @@
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::{
     collections::HashMap,
     fmt::{self, Debug, Display},
-    fs::{read_dir, File},
+    fs::File,
     io::{self, Read},
     ops::Deref,
     path::Path,
@@ -23,7 +24,7 @@ impl<'de> Visitor<'de> for LevelsVisitor {
     where
         A: serde::de::MapAccess<'de>,
     {
-        let mut res = HashMap::<String, Level>::new();
+        let mut res = HashMap::new();
         while let Some((k, mut v)) = map.next_entry::<String, Level>()? {
             k.clone_into(&mut v.id);
             res.insert(k, v);
@@ -52,10 +53,10 @@ impl<'de> Deserialize<'de> for Levels {
 }
 
 #[derive(Default, Clone)]
-pub struct Attachments(pub HashMap<String, String>);
+pub struct Attachments(pub HashMap<String, PathBuf>);
 
 impl Deref for Attachments {
-    type Target = HashMap<String, String>;
+    type Target = HashMap<String, PathBuf>;
     fn deref(&self) -> &Self::Target {
         return &self.0;
     }
@@ -66,53 +67,53 @@ impl<'de> Deserialize<'de> for Attachments {
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_map(AttachmentsVisitor)
+        deserializer.deserialize_seq(AttachmentsVisitor)
     }
 }
 
 struct AttachmentsVisitor;
 
+impl AttachmentsVisitor {
+    fn get_fname(e: impl ToString) -> Result<String, Box<dyn std::error::Error>> {
+        Ok(
+            e
+                .to_string()
+                .parse::<PathBuf>()?
+                .canonicalize()?
+                .file_name()
+                .ok_or(format!(
+                    "failed to get file name: {}",
+                    e.to_string()
+                ))?
+                .to_str()
+                .ok_or(format!(
+                    "non-Unicode characters found: {}",
+                    e.to_string()
+                ))?
+                .to_owned()
+        )
+    }
+}
+
 impl<'de> Visitor<'de> for AttachmentsVisitor {
     type Value = Attachments;
 
     fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "mapping from ID to path")
+        write!(fmt, "list of files to expose")
     }
 
-    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
     where
-        A: serde::de::MapAccess<'de>,
+        A: serde::de::SeqAccess<'de>,
     {
-        let mut res = HashMap::<String, String>::new();
-        while let Some((k, v)) = map.next_entry::<String, String>()? {
-            if k != "_" {
-                res.insert(k, v);
-            } else {
-                match read_dir(&v) {
-                    Ok(d) => {
-                        for entry in d {
-                            match entry {
-                                Err(e) => {
-                                    return Err(serde::de::Error::custom(format!(
-                                        "failed to read dir {v}: {e}"
-                                    )))
-                                }
-                                Ok(r) => {
-                                    res.insert(
-                                        r.file_name().to_str().unwrap().into(),
-                                        r.path().to_str().unwrap().into(),
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        return Err(serde::de::Error::custom(format!(
-                            "failed to read dir {v}: {e}"
-                        )))
-                    }
-                }
-            }
+        let mut res = HashMap::new();
+        while let Some(e) = seq.next_element::<String>()? {
+            res.insert(
+                AttachmentsVisitor::get_fname(&e)
+                    .map_err(serde::de::Error::custom)?,
+                e.parse()
+                    .map_err(serde::de::Error::custom)?,
+            );
         }
         Ok(Attachments(res))
     }

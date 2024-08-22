@@ -36,7 +36,6 @@ struct AppState {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = from_env();
-    std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     let config = Arc::new(args.config);
     let d = AppState {

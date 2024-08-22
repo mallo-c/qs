@@ -1,13 +1,11 @@
 use askama::Template;
 use axum::{
-    body::Body,
-    extract::{Path, Query, State},
-    response::Response,
+    body::Body, extract::{Path, Query, State}, http::StatusCode, response::{IntoResponse, Response}
 };
 use mime_guess::from_path;
 use serde::Deserialize;
 use std::sync::Arc;
-use tokio::io::AsyncReadExt;
+use tokio_util::io::ReaderStream;
 
 use crate::config::Config;
 use crate::{
@@ -117,33 +115,21 @@ pub async fn show_level(
 pub async fn show_attachment(
     State(s): State<AppState>,
     Path((file,)): Path<(String,)>,
-) -> Response<Body> {
+) -> Response {
     let src = if let Some(f) = s.config.attachments.get(&file) {
         f
     } else {
-        return Response::builder()
-            .status(404)
-            .header("Content-Type", "text/html")
-            .body(vec![].into())
-            .unwrap();
+        return StatusCode::NOT_FOUND.into_response();
     };
-    if src.starts_with("http://") || src.starts_with("https://") {
-        Response::builder()
-            .status(302)
-            .header("Location", src)
-            .body(().into())
-            .unwrap()
-    } else {
-        let mut f = tokio::fs::File::open(src).await.unwrap();
-        let mut buf = vec![];
-        f.read(&mut buf).await.unwrap();
-        Response::builder()
-            .status(200)
-            .header(
-                "Content-Type",
-                from_path(src).first_or_octet_stream().to_string(),
-            )
-            .body(buf.into())
-            .unwrap()
-    }
+    let f = tokio::fs::File::open(src).await.unwrap();
+    let stream = ReaderStream::new(f);
+    let b = Body::from_stream(stream);
+    Response::builder()
+        .status(200)
+        .header(
+            "Content-Type",
+            from_path(src).first_or_octet_stream().to_string(),
+        )
+        .body(b)
+        .unwrap()
 }
