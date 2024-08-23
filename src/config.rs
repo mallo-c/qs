@@ -177,7 +177,7 @@ mod defaults {
         "#00ffff".to_owned()
     }
     pub fn color_background() -> String {
-        "#ffffff".to_owned()
+        "#000000".to_owned()
     }
 }
 
