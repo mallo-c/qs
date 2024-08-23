@@ -1,6 +1,9 @@
 use askama::Template;
 use axum::{
-    body::Body, extract::{Path, Query, State}, http::StatusCode, response::{IntoResponse, Response}
+    body::Body,
+    extract::{Path, Query, State},
+    http::StatusCode,
+    response::{IntoResponse, Response},
 };
 use mime_guess::from_path;
 use serde::Deserialize;
@@ -41,7 +44,7 @@ struct LevelPage {
 #[template(path = "wrong.html")]
 struct Wrong {
     pub config: Arc<Config>,
-    pub msg: String
+    pub msg: String,
 }
 
 #[derive(Template)]
@@ -91,7 +94,7 @@ pub async fn show_level(
             .body(
                 Wrong {
                     config: Arc::clone(&s.config),
-                    msg
+                    msg,
                 }
                 .render()
                 .expect("failed to render"),

@@ -75,23 +75,14 @@ struct AttachmentsVisitor;
 
 impl AttachmentsVisitor {
     fn get_fname(e: impl ToString) -> Result<String, Box<dyn std::error::Error>> {
-        Ok(
-            e
-                .to_string()
-                .parse::<PathBuf>()?
-                .canonicalize()?
-                .file_name()
-                .ok_or(format!(
-                    "failed to get file name: {}",
-                    e.to_string()
-                ))?
-                .to_str()
-                .ok_or(format!(
-                    "non-Unicode characters found: {}",
-                    e.to_string()
-                ))?
-                .to_owned()
-        )
+        Ok(e.to_string()
+            .parse::<PathBuf>()?
+            .canonicalize()?
+            .file_name()
+            .ok_or(format!("failed to get file name: {}", e.to_string()))?
+            .to_str()
+            .ok_or(format!("non-Unicode characters found: {}", e.to_string()))?
+            .to_owned())
     }
 }
 
@@ -109,10 +100,8 @@ impl<'de> Visitor<'de> for AttachmentsVisitor {
         let mut res = HashMap::new();
         while let Some(e) = seq.next_element::<String>()? {
             res.insert(
-                AttachmentsVisitor::get_fname(&e)
-                    .map_err(serde::de::Error::custom)?,
-                e.parse()
-                    .map_err(serde::de::Error::custom)?,
+                AttachmentsVisitor::get_fname(&e).map_err(serde::de::Error::custom)?,
+                e.parse().map_err(serde::de::Error::custom)?,
             );
         }
         Ok(Attachments(res))
@@ -193,12 +182,12 @@ pub struct Strings {
 }
 
 #[derive(Deserialize, Clone, Default)]
-#[serde(rename_all="lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum Key {
     Exact(String),
     Checker(String),
     #[default]
-    None
+    None,
 }
 
 #[derive(Deserialize, Clone)]

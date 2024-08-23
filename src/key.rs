@@ -1,4 +1,4 @@
-pub trait Key: Send+Sync {
+pub trait Key: Send + Sync {
     fn check(&self, token: &str) -> Result<(), String>;
 
     fn should_show_input(&self) -> bool {
@@ -33,7 +33,10 @@ impl Key for String {
     }
 }
 
-impl<T> Key for T where T: Fn(&str) -> Result<(), String> + Send + Sync {
+impl<T> Key for T
+where
+    T: Fn(&str) -> Result<(), String> + Send + Sync,
+{
     fn check(&self, token: &str) -> Result<(), String> {
         self(token)
     }

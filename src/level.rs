@@ -1,5 +1,9 @@
 use std::{
-    collections::{HashMap, HashSet}, error::Error, fmt::Display, process::Command, sync::Arc
+    collections::{HashMap, HashSet},
+    error::Error,
+    fmt::Display,
+    process::Command,
+    sync::Arc,
 };
 
 use crate::{config::Config, key::Key};
@@ -62,14 +66,17 @@ impl LevelManager {
             crate::config::Key::Checker(p) => {
                 let cl = p.clone();
                 Box::new(move |s: &str| {
-                    let o = Command::new(cl.clone()).arg(s).output().expect("Failed to run");
+                    let o = Command::new(cl.clone())
+                        .arg(s)
+                        .output()
+                        .expect("Failed to run");
                     if o.status.code().is_some_and(|n| n == 0) {
                         Ok(())
                     } else {
                         Err(String::from_utf8(o.stdout).expect("stdout is not a valid UTF-8"))
                     }
                 }) as Box<dyn Key>
-            },
+            }
             crate::config::Key::None => Box::new(()) as Box<dyn Key>,
         };
         let lev = Level {
