@@ -42,5 +42,5 @@ strings:
 
 Run:
 ```sh
-path/to/qs --config path/to/config.yml
+path/to/qs path/to/config.yml
 ```

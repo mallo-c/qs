@@ -15,7 +15,7 @@ use routes::{root, show_attachment, show_level};
 #[derive(FromArgs)]
 /// qs is a quest engine
 struct Args {
-    #[argh(option, from_str_fn(__argh_from_str_fn_config))]
+    #[argh(positional, from_str_fn(__argh_from_str_fn_config))]
     /// config file
     config: Config,
     #[argh(option, short = 'p', default = "8080")]
