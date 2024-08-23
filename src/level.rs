@@ -1,11 +1,8 @@
 use std::{
-    collections::{HashMap, HashSet},
-    error::Error,
-    fmt::Display,
-    sync::Arc,
+    collections::{HashMap, HashSet}, error::Error, fmt::Display, process::Command, sync::Arc
 };
 
-use crate::config::Config;
+use crate::{config::Config, key::Key};
 
 pub struct LevelManager {
     st: HashMap<String, Arc<Level>>,
@@ -60,6 +57,21 @@ impl LevelManager {
             None => return Err(LevelInspectError::NotFound(st.to_string())),
             Some(x) => x,
         };
+        let new_key: Box<dyn Key> = match &(lev.key) {
+            crate::config::Key::Exact(s) => Box::new(s.clone()) as Box<dyn Key>,
+            crate::config::Key::Checker(p) => {
+                let cl = p.clone();
+                Box::new(move |s: &str| {
+                    let o = Command::new(cl.clone()).arg(s).output().expect("Failed to run");
+                    if o.status.code().is_some_and(|n| n == 0) {
+                        Ok(())
+                    } else {
+                        Err(String::from_utf8(o.stdout).expect("stdout is not a valid UTF-8"))
+                    }
+                }) as Box<dyn Key>
+            },
+            crate::config::Key::None => Box::new(()) as Box<dyn Key>,
+        };
         let lev = Level {
             id: lev.id.clone(),
             legend: lev.legend.clone(),
@@ -79,7 +91,7 @@ impl LevelManager {
                     }
                 }
             },
-            key: lev.key.clone(),
+            key: Arc::new(new_key),
         };
         hm.insert(st.to_string(), Arc::new(lev));
         Ok(())
@@ -93,7 +105,7 @@ pub struct Level {
     pub id: String,
     pub legend: String,
     pub next: Next,
-    pub key: Option<String>,
+    pub key: Arc<Box<dyn Key>>,
 }
 
 pub enum Next {

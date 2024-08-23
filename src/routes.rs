@@ -41,6 +41,7 @@ struct LevelPage {
 #[template(path = "wrong.html")]
 struct Wrong {
     pub config: Arc<Config>,
+    pub msg: String
 }
 
 #[derive(Template)]
@@ -83,20 +84,19 @@ pub async fn show_level(
             )
             .unwrap();
     };
-    if let Some(a) = &lev.key {
-        if a != &to.answer {
-            return Response::builder()
-                .status(403)
-                .header("Content-Type", "text/html")
-                .body(
-                    Wrong {
-                        config: Arc::clone(&s.config),
-                    }
-                    .render()
-                    .expect("failed to render"),
-                )
-                .unwrap();
-        }
+    if let Err(msg) = lev.key.check(&to.answer) {
+        return Response::builder()
+            .status(403)
+            .header("Content-Type", "text/html")
+            .body(
+                Wrong {
+                    config: Arc::clone(&s.config),
+                    msg
+                }
+                .render()
+                .expect("failed to render"),
+            )
+            .unwrap();
     }
     Response::builder()
         .status(200)

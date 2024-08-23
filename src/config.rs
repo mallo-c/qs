@@ -192,13 +192,24 @@ pub struct Strings {
     pub not_found: String,
 }
 
+#[derive(Deserialize, Clone, Default)]
+#[serde(rename_all="lowercase")]
+pub enum Key {
+    Exact(String),
+    Checker(String),
+    #[default]
+    None
+}
+
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Level {
     #[serde(skip)]
     pub id: String,
     pub legend: String,
     pub next: Option<Next>,
-    pub key: Option<String>,
+    #[serde(default)]
+    pub key: Key,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

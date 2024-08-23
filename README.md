@@ -22,7 +22,7 @@ levels:
       caption: I guessed it!
       to: lev3
   lev3:
-    key: 7
+    key: !exact 7
     legend: |
       it is 7. Well, how about something more difficult?
       Guess a number between 1 and 100.
@@ -32,7 +32,7 @@ levels:
       caption: Submit
       to: success
   success:
-    key: 40
+    key: !exact 40
     legend: |
       That is it!
 strings:

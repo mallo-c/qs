@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
 <p>{{config.strings.wrong_answer}}</p>
+<pre>{{msg}}</pre>
 <button onclick="history.back()">{{config.strings.back}}</button>
 {% endblock %}

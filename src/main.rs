@@ -1,6 +1,7 @@
 mod config;
 mod level;
 mod routes;
+mod key;
 
 use std::error::Error;
 use std::net::SocketAddrV4;
